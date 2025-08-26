@@ -7,7 +7,7 @@ This module of the course introduces you to the basics of programming in Python,
    * Jupyter Notebook
      * Open in VS Code
    * Google Colab
-     * launch notebook at `colab.research.google.com`
+     * launch notebook at [`colab.research.google.com`](https://colab.research.google.com)
 2. iPython
   * Launch with `ipython` from command window
   * Interactive mode in VS Code (block code with `# %%`)
