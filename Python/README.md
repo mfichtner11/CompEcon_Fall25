@@ -10,6 +10,7 @@ This module of the course introduces you to the basics of programming in Python,
      * launch notebook at `colab.research.google.com`
 2. iPython
   * Launch with `ipython` from command window
+  * Interactive mode in VS Code (block code with `# %%`)
 3. Calling Python from the terminal/command window
    * Write code in a text editor, save a a `*.py` file
    * Execute from the command line with `python filename.py`
