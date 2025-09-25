@@ -17,6 +17,8 @@ os.makedirs(output_path, exist_ok=True)
 # Import
 # ------------------------------------------------------------
 def import_data(file_path: str) -> pd.DataFrame:
+    """
+    Import PSID data from Stata file."""
     return pd.read_stata(file_path)
 
 # ------------------------------------------------------------
@@ -70,6 +72,8 @@ def clean_data(df: pd.DataFrame) -> pd.DataFrame:
 PARAM_ORDER = ["Intercept", "hyrsed", "age", "age_sq", "black", "hispanic", "other"]
 
 def build_X(sub: pd.DataFrame) -> np.ndarray:
+    """ Build design matrix X from subset dataframe.
+    """
     return np.column_stack([
         np.ones(len(sub)),
         sub["hyrsed"].to_numpy(float),
@@ -84,6 +88,8 @@ def build_X(sub: pd.DataFrame) -> np.ndarray:
 # NLL + gradient
 # ------------------------------------------------------------
 def nll_and_grad(theta: np.ndarray, X: np.ndarray, y: np.ndarray):
+    """ Compute negative log-likelihood and its gradient for Gaussian linear model.
+    """
     n, k = X.shape
     beta = theta[:k]
     lsig = theta[k]
@@ -102,6 +108,8 @@ def nll_and_grad(theta: np.ndarray, X: np.ndarray, y: np.ndarray):
 # MLE wrapper
 # ------------------------------------------------------------
 def mle_gaussian(X: np.ndarray, y: np.ndarray, method="L-BFGS-B"):
+    """ MLE estimation for Gaussian linear model using scipy.optimize.minimize.
+    """
     n, k = X.shape
     beta_ols, *_ = np.linalg.lstsq(X, y, rcond=None)
     resid = y - X @ beta_ols
@@ -133,6 +141,8 @@ def mle_gaussian(X: np.ndarray, y: np.ndarray, method="L-BFGS-B"):
 # Run estimation by year
 # ------------------------------------------------------------
 def run_mle_years(cleaned: pd.DataFrame, years=(1971, 1980, 1990, 2000)):
+    """ Run MLE for each year and collect results in DataFrame.
+    """
     results = []
     for t in years:
         sub = cleaned.loc[cleaned["year"] == t, :]
@@ -158,6 +168,7 @@ def run_mle_years(cleaned: pd.DataFrame, years=(1971, 1980, 1990, 2000)):
 # Main
 # ------------------------------------------------------------
 if __name__ == "__main__":
+    """ Main execution: import, clean, run MLE, save results."""
     PSID_df = import_data(data_path)
     clean_PSID = clean_data(PSID_df)
     results = run_mle_years(clean_PSID)
