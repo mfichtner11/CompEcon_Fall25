@@ -5,3 +5,7 @@ ProblemSets/ProblemSet5/cleaned_data/
 
 # ignore large data outputs
 ProblemSets/ProblemSet5/cleaned_data/
+
+# ignore large/generated data
+ProblemSets/ProblemSet5/cleaned_data/
+*.dta
