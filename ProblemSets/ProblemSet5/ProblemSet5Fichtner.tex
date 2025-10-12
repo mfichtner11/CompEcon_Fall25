@@ -62,56 +62,59 @@ Thirdly, the study will utilize a regression discontinuity design to quantify th
 \label{fig:rd_design}
 \end{figure}
 
-\begin{table}[!htbp] 
-\centering
-\caption{Regression Results: Developmental Screening}
-\begin{adjustbox}{width=\textwidth,center}
+\begin{table}[!htbp] \centering
+  \caption{Regression Results: Developmental Screening}
 \begin{tabular}{@{\extracolsep{5pt}}lccc}
 \\[-1.8ex]\hline
 \hline \\[-1.8ex]
-& \multicolumn{3}{c}{\textit{Dependent variable: DEV\_SCREEN}} \\
-\cline{2-4}
-\\[-1.8ex] & \multicolumn{1}{c}{OLS} & \multicolumn{1}{c}{OLS + State FE} & \multicolumn{1}{c}{DiD} \\
+& \multicolumn{3}{c}{\textit{Dependent variable: Developmental Screening}} \
+\cr \cline{2-4}
+\\[-1.8ex] & \multicolumn{1}{c}{OLS} & \multicolumn{1}{c}{State FE} & \multicolumn{1}{c}{Regression Discontinuity}  \\
 \\[-1.8ex] & (1) & (2) & (3) \\
 \hline \\[-1.8ex]
-Age (Months) & -0.001$^{**}$ & -0.002$^{***}$ & -0.001$^{**}$ \\
-& (0.001) & (0.001) & (0.001) \\
-Black & -0.064$^{***}$ & -0.050$^{***}$ & -0.063$^{***}$ \\
-& (0.014) & (0.015) & (0.014) \\
-High Education & 0.126$^{***}$ & 0.116$^{***}$ & 0.123$^{***}$ \\
-& (0.010) & (0.010) & (0.010) \\
-Male & 0.005 & 0.003 & 0.005 \\
-& (0.007) & (0.007) & (0.007) \\
-Other Race & -0.035$^{***}$ & -0.038$^{***}$ & -0.036$^{***}$ \\
-& (0.009) & (0.010) & (0.009) \\
-Post-2017 & 0.044$^{***}$ & 0.042$^{***}$ & 0.044$^{***}$ \\
-& (0.008) & (0.008) & (0.015) \\
-Private Insurance & 0.105$^{***}$ & 0.102$^{***}$ & \\
-& (0.012) & (0.012) & \\
-Public Insurance & 0.053$^{***}$ & 0.052$^{***}$ & \\
-& (0.013) & (0.013) & \\
-Private Group & & & 0.068$^{***}$ \\
-& & & (0.015) \\
-DiD Effect & & & 0.001 \\
-& & & (0.017) \\
-Urban & 0.010 & 0.042$^{***}$ & 0.010 \\
-& (0.007) & (0.010) & (0.007) \\
-Intercept & 0.202$^{***}$ & 0.173$^{***}$ & 0.241$^{***}$ \\
-& (0.021) & (0.033) & (0.021) \\
+ Age (Months) & 0.006$^{}$ & 0.006$^{}$ & 0.006$^{}$ \\
+& (0.004) & (0.006) & (0.004) \\
+ Black & 0.204$^{*}$ & 0.114$^{}$ & 0.217$^{**}$ \\
+& (0.107) & (0.129) & (0.107) \\
+ Female & 0.047$^{}$ & -0.009$^{}$ & \\
+& (0.071) & (0.092) & \\
+ High Education & -0.044$^{}$ & -0.040$^{}$ & -0.045$^{}$ \\
+& (0.070) & (0.090) & (0.070) \\
+ Intercept & -0.003$^{}$ & 0.034$^{}$ & 0.072$^{}$ \\
+& (0.153) & (0.341) & (0.107) \\
+ MALE & & & -0.039$^{}$ \\
+& & & (0.070) \\
+ Other Race & 0.086$^{}$ & 0.021$^{}$ & 0.102$^{}$ \\
+& (0.091) & (0.109) & (0.092) \\
+ Post-2017 & 0.167$^{*}$ & 0.192$^{*}$ & 0.234$^{***}$ \\
+& (0.090) & (0.104) & (0.077) \\
+ Private Insurance & 0.120$^{}$ & 0.127$^{}$ & 0.119$^{}$ \\
+& (0.090) & (0.116) & (0.088) \\
+ Public Insurance & 0.188$^{**}$ & 0.217$^{**}$ & 0.189$^{**}$ \\
+& (0.087) & (0.110) & (0.086) \\
+ RD Interaction & & & -0.110$^{*}$ \\
+& & & (0.064) \\
+ Urban & 0.022$^{}$ & 0.046$^{}$ & 0.022$^{}$ \\
+& (0.071) & (0.084) & (0.070) \\
+ Year Centered & & & 0.053$^{}$ \\
+& & & (0.053) \\
+ State Fixed Effects & No & Yes & No \\
 \hline \\[-1.8ex]
-State Fixed Effects & No & Yes & No \\
-Observations & 20,171 & 20,171 & 20,171 \\
-$R^2$ & 0.020 & 0.043 & 0.019 \\
+ Observations & 200 & 200 & 200 \\
+ $R^2$ & 0.067 & 0.247 & 0.087 \\
+ Adjusted $R^2$ & 0.023 & -0.071 & 0.039 \\
+ Residual Std. Error & 0.493 (df=190) & 0.516 (df=140) & 0.489 (df=189) \\
+ F Statistic & 1.871$^{*}$ (df=9; 190) & 11189.141$^{***}$ (df=59; 140) & 17.102$^{***}$ (df=10; 189) \\
 \hline
 \hline \\[-1.8ex]
 \textit{Note:} & \multicolumn{3}{r}{$^{*}$p$<$0.1; $^{**}$p$<$0.05; $^{***}$p$<$0.01} \\
 \end{tabular}
-\end{adjustbox}
 \end{table}
+
 
 \subsection{Unit Test Verification}
 
-\begin{figure}[H]
+\begin{figure}[htbp]
 \centering
 \includegraphics[width=0.8\textwidth]{images/TestVerify.jpg}
 \caption{Unit Test Verification}

@@ -340,7 +340,34 @@ def create_rd_visualization(df, output_dir):
     print(f"RD visualization saved to: {output_dir}/rd_visualization.png")
 
 def create_regression_table(models, output_dir):
-    """Create clean regression table without individual state fixed effects."""
+    """
+    Create clean regression table without individual state fixed effects.
+    
+    This function creates a publication-ready LaTeX table showing results from
+    all three models while hiding the individual state coefficients from the
+    fixed effects model to maintain readability.
+    
+    Parameters
+    ----------
+    models : list
+        List of fitted regression models [OLS, State_FE, RD]
+    output_dir : str
+        Directory to save the LaTeX table file
+        
+    Returns
+    -------
+    str or None
+        LaTeX table string if successful, None if failed
+        
+    Notes
+    -----
+    The function:
+    1. Uses Stargazer to create professional LaTeX tables
+    2. Hides individual state coefficients (C(STATE)[T.2], etc.)
+    3. Keeps the "State Fixed Effects: Yes/No" line for clarity
+    4. Uses professional variable labels
+    5. Falls back to manual table creation if Stargazer fails
+    """
     print("\n" + "="*60)
     print("CREATING LATEX TABLE")
     print("="*60)
@@ -348,26 +375,44 @@ def create_regression_table(models, output_dir):
     try:
         # Initialize stargazer
         stargazer = Stargazer(models)
-        stargazer.title("Regression Results: Developmental Screening")
+        stargazer.title("Regression Results: Impact of 2017 Policy on Developmental Screening")
         stargazer.custom_columns(["OLS", "State FE", "Regression Discontinuity"], [1, 1, 1])
         
-        # Hide individual state fixed effects (keep only the note)
+        # Hide individual state fixed effects coefficients
+        # Get all coefficient names from the state FE model (model 2)
+        if len(models) > 1 and models[1] is not None:
+            state_fe_coeffs = [param for param in models[1].params.index 
+                             if param.startswith('C(STATE)')]
+            
+            # Remove state fixed effects coefficients from table
+            if state_fe_coeffs:
+                stargazer.remove_covariates(state_fe_coeffs)
+                print(f"✓ Hiding {len(state_fe_coeffs)} individual state coefficients")
+        
+        # Add informational line about state fixed effects
         stargazer.add_line('State Fixed Effects', ['No', 'Yes', 'No'])
         
         # Professional variable labels
         stargazer.rename_covariates({
-            'POST2017': 'Post-2017', 
+            'POST2017': 'Post-2017 Policy', 
             'PRIVATE_INSURANCE': 'Private Insurance', 
             'PUBLIC_INSURANCE': 'Public Insurance',
             'YEAR_CENTERED': 'Year Centered',
-            'RD_INTERACTION': 'RD Interaction',
+            'RD_INTERACTION': 'Post-2017 × Year',
             'FEMALE': 'Female',
+            'MALE': 'Male',
             'BLACK': 'Black',
             'OTHER_RACE': 'Other Race',
             'HIGH_EDUCATION': 'High Education',
             'URBAN': 'Urban',
-            'AGE_MONTHS': 'Age (Months)'
+            'AGE_MONTHS': 'Age (Months)',
+            'Intercept': 'Constant'
         })
+        
+        # Additional formatting options
+        stargazer.significance_levels([0.1, 0.05, 0.01])
+        stargazer.show_degrees_of_freedom(False)
+        stargazer.show_model_numbers(True)
         
         # Generate and save table
         latex_table = stargazer.render_latex()
@@ -377,12 +422,139 @@ def create_regression_table(models, output_dir):
         with open(os.path.join(output_dir, "regression_table.tex"), 'w') as f:
             f.write(latex_table)
         
-        print("LaTeX table saved!")
+        print("✓ LaTeX table saved to: regression_table.tex")
+        print("✓ Individual state coefficients excluded from publication table")
         return latex_table
         
     except Exception as e:
-        print(f"Error creating LaTeX table: {e}")
-        return None
+        print(f"❌ Error creating Stargazer table: {e}")
+        print("Attempting manual table creation as fallback...")
+        
+        # Fallback: Create simple manual table
+        return create_simple_manual_table(models, output_dir)
+
+def create_simple_manual_table(models, output_dir):
+    """
+    Create a simple LaTeX table manually as fallback when Stargazer fails.
+    
+    Parameters
+    ----------
+    models : list
+        List of fitted regression models
+    output_dir : str
+        Directory to save the table
+        
+    Returns
+    -------
+    str
+        LaTeX table string
+    """
+    print("Creating manual LaTeX table...")
+    
+    # Extract key coefficients (excluding individual state FE)
+    key_vars = ['POST2017', 'PRIVATE_INSURANCE', 'PUBLIC_INSURANCE', 
+                'FEMALE', 'MALE', 'BLACK', 'OTHER_RACE', 'HIGH_EDUCATION', 
+                'URBAN', 'AGE_MONTHS', 'YEAR_CENTERED', 'RD_INTERACTION', 'Intercept']
+    
+    var_labels = {
+        'POST2017': 'Post-2017 Policy',
+        'PRIVATE_INSURANCE': 'Private Insurance',
+        'PUBLIC_INSURANCE': 'Public Insurance', 
+        'FEMALE': 'Female',
+        'MALE': 'Male',
+        'BLACK': 'Black',
+        'OTHER_RACE': 'Other Race',
+        'HIGH_EDUCATION': 'High Education',
+        'URBAN': 'Urban',
+        'AGE_MONTHS': 'Age (Months)',
+        'YEAR_CENTERED': 'Year Centered',
+        'RD_INTERACTION': 'Post-2017 × Year',
+        'Intercept': 'Constant'
+    }
+    
+    # Build table content
+    table_lines = [
+        "\\begin{table}[htbp]",
+        "\\centering",
+        "\\caption{Regression Results: Impact of 2017 Policy on Developmental Screening}",
+        "\\begin{tabular}{lccc}",
+        "\\hline\\hline",
+        " & (1) OLS & (2) State FE & (3) RD Design \\\\",
+        "\\hline",
+    ]
+    
+    # Add coefficient rows (excluding individual state FE)
+    for var in key_vars:
+        if any(var in model.params.index for model in models if model is not None):
+            label = var_labels.get(var, var)
+            coef_row = f"{label} & "
+            se_row = " & "
+            
+            for model in models:
+                if model is not None and var in model.params.index:
+                    coef = model.params[var]
+                    se = model.bse[var] 
+                    pval = model.pvalues[var]
+                    stars = '***' if pval < 0.01 else '**' if pval < 0.05 else '*' if pval < 0.10 else ''
+                    
+                    coef_row += f"{coef:.3f}{stars} & "
+                    se_row += f"({se:.3f}) & "
+                else:
+                    coef_row += " & "
+                    se_row += " & "
+            
+            # Clean up trailing &
+            coef_row = coef_row.rstrip(' & ') + " \\\\"
+            se_row = se_row.rstrip(' & ') + " \\\\"
+            
+            table_lines.extend([coef_row, se_row])
+    
+    # Add model statistics
+    table_lines.extend([
+        "\\hline",
+        "State Fixed Effects & No & Yes & No \\\\",
+    ])
+    
+    # Add N and R-squared
+    n_row = "Observations & "
+    r2_row = "R-squared & "
+    
+    for model in models:
+        if model is not None:
+            n_row += f"{int(model.nobs):,} & "
+            r2_row += f"{model.rsquared:.3f} & "
+        else:
+            n_row += " & "
+            r2_row += " & "
+    
+    n_row = n_row.rstrip(' & ') + " \\\\"
+    r2_row = r2_row.rstrip(' & ') + " \\\\"
+    
+    table_lines.extend([n_row, r2_row])
+    
+    # Close table
+    table_lines.extend([
+        "\\hline\\hline",
+        "\\end{tabular}",
+        "\\begin{tablenotes}",
+        "\\small",
+        "\\item \\textit{Notes:} Heteroskedasticity-robust standard errors in parentheses.",
+        "\\item State fixed effects included in Model 2 but individual coefficients not reported.",
+        "\\item * p$<$0.10, ** p$<$0.05, *** p$<$0.01",
+        "\\end{tablenotes}",
+        "\\end{table}"
+    ])
+    
+    # Save table
+    table_content = '\n'.join(table_lines)
+    os.makedirs(output_dir, exist_ok=True)
+    
+    with open(os.path.join(output_dir, "regression_table.tex"), 'w') as f:
+        f.write(table_content)
+    
+    print("✓ Manual LaTeX table created successfully")
+    print("✓ Individual state coefficients excluded from table")
+    return table_content
 
 def summarize_policy_effects(models):
     """
@@ -432,10 +604,10 @@ def summarize_policy_effects(models):
     print("KEY POLICY EFFECTS (POST2017 COEFFICIENTS)")
     print("="*60)
     
-    model_names = ['Basic OLS', 'State FE', 'RD Design']  # Updated model name
+    model_names = ['Basic OLS', 'State FE', 'RD Design']
     
     for i, (name, model) in enumerate(zip(model_names, models)):
-        if 'POST2017' in model.params.index:
+        if model is not None and 'POST2017' in model.params.index:
             coef = model.params['POST2017']
             se = model.bse['POST2017']
             pval = model.pvalues['POST2017']
@@ -453,6 +625,8 @@ def summarize_policy_effects(models):
                 rd_int_coef = model.params.get('RD_INTERACTION', 0)
                 print(f"  Pre-treatment trend: {year_coef:.4f}")
                 print(f"  Slope change post-2017: {rd_int_coef:.4f}")
+        else:
+            print(f"\n{name}: Model estimation failed")
 
 def main():
     """
@@ -504,29 +678,47 @@ def main():
     
     Regression analysis completed!
     """
+    print("=" * 70)
+    print("🏥 NSCH DEVELOPMENTAL SCREENING ANALYSIS")
+    print("📊 Regression Analysis Pipeline")
+    print("=" * 70)
+    
     # Load analysis-ready dataset
     df = load_analysis_data()
     
     # Estimate all three models
-    print("Estimating regression models...")
+    print("\n🔄 ESTIMATING REGRESSION MODELS...")
+    print("-" * 40)
+    
     model1 = estimate_basic_ols(df)
     model2 = estimate_state_fixed_effects(df)
-    model3, df_enhanced = estimate_regression_discontinuity(df)  # Using RD
+    model3, df_enhanced = estimate_regression_discontinuity(df)
     
-    # Create RD visualization
+    # Set up output directories
     script_dir = os.path.dirname(os.path.abspath(__file__))
     current_dir = os.path.dirname(script_dir)
     results_dir = os.path.join(current_dir, "results")
+    
+    # Create RD visualization
+    print("\n📈 CREATING RD VISUALIZATION...")
     create_rd_visualization(df_enhanced, results_dir)
     
-    # Create publication table
+    # Create publication table (with state FE coefficients hidden)
+    print("\n📋 CREATING PUBLICATION TABLE...")
     models = [model1, model2, model3]
     create_regression_table(models, results_dir)
     
     # Summarize key findings
     summarize_policy_effects(models)
     
-    print("\nRegression analysis completed!")
+    # Final summary
+    print(f"\n" + "="*70)
+    print(f"✅ REGRESSION ANALYSIS COMPLETED!")
+    print(f"📊 All 3 models estimated successfully")
+    print(f"📄 Results saved to: {results_dir}")
+    print(f"📋 Publication table excludes individual state coefficients")
+    print("="*70)
+    
     return models, df_enhanced
 
 # Execute analysis when script is run directly
