@@ -50,10 +50,10 @@ Grades will be based on the categories listed below with the corresponding weigh
 
 Assignment                   | Points |   Percent  |
 -----------------------------|--------|------------|
-Problem Sets                 |   80   |    80%   |
-Final Project                 |   10   |    10%   |
-Class Participation                |   10   |    10%   |
-**Total points**             | **100** | **100.0%** |
+Problem Sets                 |   90   |    82%   |
+Final Project                 |   10   |    9%   |
+Class Participation                |   10   |    9%   |
+**Total points**             | **110** | **100.0%** |
 
 * **Homework:** I will assign 9 problem sets throughout the semester.
 	* You must write and submit your own answers, although I encourage you to collaborate with your fellow students. I **DO NOT** want to see a bunch of copies of identical answers. I **DO** want to see each of you learning how to code these problems so that you could do it on your own.
