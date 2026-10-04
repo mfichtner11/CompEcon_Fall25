@@ -1,0 +1,302 @@
+\documentclass{article}
+
+    \usepackage[margin=1in]{geometry}
+    \usepackage{amsmath}
+    \usepackage{parskip}
+    \usepackage{ragged2e}
+    \usepackage{booktabs}
+    \usepackage{float}
+    \usepackage{fancyhdr}
+    \usepackage{graphicx}
+    \usepackage{amssymb}
+    \usepackage{booktabs}
+
+\pagestyle{fancy}
+\fancyhf{} % clears default header/footer
+
+% Header
+\lhead{Marli Fichtner}
+\chead{Problem Set 8 | Computational Economics}
+\rhead{September 20, 2026}
+
+% Page number
+\cfoot{\thepage}
+
+% Header line
+\renewcommand{\headrulewidth}{0.4pt}
+
+% No footer line
+\renewcommand{\footrulewidth}{0pt}
+
+\begin{document}
+
+\section{Model}
+
+\subsection{Basic Value Function - Cooper Ejarque $(2001)$}
+\begin{equation}
+V(K,A)
+=
+\max_{K'}
+\left\{
+\pi(K,A)
+- p\left(K' - K(1-\delta)\right)
+- C(K',K)
++ \beta E_{A' \mid A} V(K',A')
+\right\}.
+\end{equation}
+
+Here, $K$ is the current capital stock, $K'$ is the chosen
+next-period capital stock, $\delta$ is the depreciation rate,
+$p$ is the price of capital goods, and $\beta$ is the discount
+factor. Current profits are
+\[
+\pi(K,A)=AK^\alpha,
+\]
+where $A$ is a profitability shock (AR1 Process) incorporating changes in
+productivity, demand, and input prices.
+
+The shock follows an AR(1) process in logs:
+\[
+\log A_{t+1}
+=
+\rho \log A_t+\varepsilon_{t+1},
+\qquad
+\varepsilon_{t+1}\overset{\mathrm{i.i.d.}}{\sim}
+\mathcal{N}(0,\sigma^2).
+\]
+
+
+
+Gross investment and capital adjustment costs are
+\[
+I=K'-(1-\delta)K,
+\qquad
+C(K',K)=\frac{\gamma}{2}\left(\frac{I}{K}\right)^2 K.
+\]
+
+The term $\mathbb{E}_{A'\mid A}[V(K',A')]$ represents the firm's
+expected continuation value at its chosen next-period capital
+stock. The expectation averages over possible future profitability
+outcomes conditional on current profitability. Multiplication
+by $\beta$ discounts this expected value to the current period.
+
+\subsection{Model with Costly External Finance}
+
+The specification in Table 3 extends the baseline investment model
+by introducing costly external finance. In the baseline model, the
+firm can finance investment without an additional financing cost.
+In the Table 3 specification, the firm chooses between financing
+investment internally from current profits and obtaining external
+funds.
+
+
+The financing gap is
+\[
+E=I-\pi(K,A)
+=K'-(1-\delta)K-AK^\alpha.
+\]
+
+When external finance is required, its cost is
+$\phi(E)=\phi_0+\phi_1 E$. Thus, the financing cost is
+\[
+F(K',K,A)=
+\begin{cases}
+0,
+& K'\leq AK^\alpha+(1-\delta)K,\\[4pt]
+\phi_0+\phi_1\bigl[K'-(1-\delta)K-AK^\alpha\bigr],
+& K'>AK^\alpha+(1-\delta)K.
+\end{cases}
+\]
+
+The firm's maximizes:
+\[
+V(K,A)=\max\left\{V^i(K,A),V^e(K,A)\right\},
+\]
+where the value under internal finance is
+\[
+V^i(K,A)=
+\max_{\substack{K'\geq 0\\
+K'\leq \pi(K,A)+(1-\delta)K}}
+\left\{
+\pi(K,A)-I-C(K',K)
++\beta\mathbb{E}_{A'\mid A}[V(K',A')]
+\right\},
+\]
+and the value under external finance is
+\[
+V^e(K,A)=
+\max_{\substack{K'\geq 0\\
+K'>\pi(K,A)+(1-\delta)K}}
+\left\{
+\pi(K,A)-I-C(K',K)
+-\phi_0-\phi_1\bigl[I-\pi(K,A)\bigr]
++\beta\mathbb{E}_{A'\mid A}[V(K',A')]
+\right\}.
+\]
+
+The term $\mathbb{E}_{A'\mid A}[V(K',A')]$ is the firm's expected
+continuation value at its chosen next-period capital stock,
+averaged over future profitability outcomes conditional on current
+profitability. The discount factor $\beta$ converts this expected
+future value into current value. Future financing choices are
+included in $V(K',A')$.
+
+
+\section{Results}
+
+\subsection{Two-Stage SMM Estimation}
+
+In the first stage, I initialize the structural parameters at
+the estimates reported in Table 3 of Cooper and Ejarque (2003)
+and use an identity weighting matrix, $W_1=I_6$. The estimator
+minimizes the sum of squared discrepancies between the simulated
+moments and the empirical targets:
+\[
+\hat{\theta}_1
+=
+\arg\min_{\theta\in\Theta}
+g(\theta)^\top W_1 g(\theta),
+\qquad
+g(\theta)=m^{\mathrm{sim}}(\theta)-m^{\mathrm{data}}.
+\]
+This specification assigns the same weight to each squared
+discrepancy without adjusting for differences in moment
+variability or correlations between moments.
+
+For the second stage, I simulate independent panels at
+$\hat{\theta}_1$ and calculate the six moments for each panel.
+I use these moment vectors to estimate their variance--covariance
+matrix, $\hat{\Omega}$, and construct
+\[
+W_2=\hat{\Omega}^{-1}.
+\]
+Starting from the first-stage estimates, I then reestimate
+the parameters:
+\[
+\hat{\theta}_2
+=
+\arg\min_{\theta\in\Theta}
+g(\theta)^\top W_2 g(\theta).
+\]
+The second-stage weights account for the variability of the
+moments and their correlations.
+
+Within each stage, every candidate parameter vector requires
+solving the firm's dynamic optimization problem, simulating
+firms, and recalculating the moments. The optimization continues
+until the convergence criteria are met or the evaluation limit
+is reached, with the weighting matrix held fixed. I use the
+same simulation seeds across parameter trials to reduce
+simulation noise in comparisons of the objective function.
+
+The results tables report the empirical targets, simulated
+moments, and their differences for each stage. Because the
+weighting matrices differ, the two stages' objective values
+are not directly comparable.
+\begin{table}[H]
+    \centering
+    \caption{First-stage moments}
+    \label{tab:stage1_moments}
+        \input{results/stage1_moments.tex}
+\end{table}
+
+\begin{table}[H]
+    \centering
+    \caption{Second-stage moments}
+    \label{tab:stage2_moments}
+        \input{results/stage2_moments.tex}
+\end{table}
+\section{Table 3 Replication}      
+
+\subsection{Cooper and Ejarque (2003) Table}
+
+
+\begin{table}[htbp]
+\centering
+\caption{Structural parameter estimates and moments}
+\label{tab:table3}
+\small
+\renewcommand{\arraystretch}{1.15}
+
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccc@{}}
+\multicolumn{6}{@{}l}{%
+(a) Structural parameter estimates: costly external finance}\\[4pt]
+\toprule
+Model & \multicolumn{5}{c}{Structural parameter estimates ($\Theta$)}\\
+\cmidrule(lr){2-6}
+& $\alpha$ & $\gamma$ & $\rho$ & $\sigma$ & $\tilde{\phi}_0$\\
+\midrule
+Costly & 0.6956 & 0.1331 & 0.0976 & 0.8932 & 0\\
+       & (0.01) & (0.04) & (0.02) & (0.03) & (0.05)\\
+\bottomrule
+\end{tabular*}
+
+\par\vspace{1em}
+
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccccc@{}}
+\multicolumn{8}{@{}l}{(b) Moments by model}\\[4pt]
+\toprule
+Model & \multicolumn{7}{c}{Reduced-form coefficients and moments}\\
+\cmidrule(lr){2-8}
+& $a_1$ & $a_2$ & $\mathrm{sc}(I/K)$
+& $\mathrm{std}(\pi/K)$ & $\bar{q}$
+& Ext.\ frac. & $J(\Theta)$\\
+\midrule
+Moments & 0.03 & 0.24 & 0.4 & 0.25 & 3.0 & 0.25 & n.a.\\
+Costly & 0.0388 & 0.2358 & 0.0158 & 0.2614
+       & 2.9413 & 0.2236 & 68.27\\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+
+\subsection{Replication of Table 3 using my SMM estimation procedure:}
+
+
+
+\begin{table}[htbp]
+\centering
+\caption{Structural parameter estimates and moments}
+\label{tab:replication_table3}
+\small
+\renewcommand{\arraystretch}{1.15}
+
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccc@{}}
+\multicolumn{6}{@{}l}{%
+(a) Structural parameter estimates: costly external finance}\\[4pt]
+\toprule
+Model & \multicolumn{5}{c}{Structural parameter estimates ($\Theta$)}\\
+\cmidrule(lr){2-6}
+& $\alpha$ & $\gamma$ & $\rho$ & $\sigma$ & $\tilde{\phi}_0$\\
+\midrule
+Costly & 0.7617 & 0.4732 & 0.2255& 0.6784 & 0.0087\\
+       & (0.01) & (0.05) & (0.07) & (0.01) & (0.02)\\
+\bottomrule
+\end{tabular*}
+
+\par\vspace{1em}
+
+\begin{tabular*}{\textwidth}{@{\extracolsep{\fill}}lccccccc@{}}
+\multicolumn{8}{@{}l}{(b) Moments by model}\\[4pt]
+\toprule
+Model & \multicolumn{7}{c}{Reduced-form coefficients and moments}\\
+\cmidrule(lr){2-8}
+& $a_1$ & $a_2$ & $\mathrm{sc}(I/K)$
+& $\mathrm{std}(\pi/K)$ & $\bar{q}$
+& Ext.\ frac. & $J(\Theta)$\\
+\midrule
+Moments & 0.03 & 0.24 & 0.4 & 0.25 & 3.0 & 0.25 & n.a.\\
+Costly  & 0.1825 & 0.2549 & 0.0675 & 0.2371 & 2.4707 & 0.25 & n.a.\\
+\bottomrule
+\end{tabular*}
+\end{table}
+
+
+\section{Interpretation}
+
+The two-step SMM procedure produces second-stage estimates of $\alpha=0.7617$, $\gamma=0.4732$, $\rho=0.2255$, $\sigma=0.6748$, and $\tilde{\phi}_0=0.0352$. Relative to the paper, these estimates imply greater curvature in adjustment costs, more persistent productivity shocks, and a smaller standard deviation of productivity innovations. The estimated fixed cost of external financing is positive but close to zero.
+The simulated moments reproduce some targets more closely than others. The cash-flow coefficient is 0.2549 versus a target of 0.24, and the standard deviation of cash flow relative to capital is 0.2371 versus 0.25. However, the Q coefficient is substantially too high (0.1825 versus 0.03), while investment serial correlation (0.0675 versus 0.40), mean Q (2.4707 versus 3.00), and the fraction of investment financed externally (0.0135 versus 0.25) are too low. Thus, although the optimizer reports convergence, the estimates do not closely replicate Table 3 overall.
+The reported standard errors are small, but they are sensitive to the step sizes used to calculate numerical derivatives. They should therefore be treated as provisional rather than evidence of precise parameter estimates. In particular, the positive estimate of the fixed financing cost does not provide a robust conclusion that this cost differs from zero.
+
+I also checked the sensitivity of the results to the number of firms, the number of periods, and the random seed. The estimates and simulated moments were generally consistent across these tests, suggesting that simulation noise and sample size alone are unlikely to explain the discrepancies with Table 3. However, this stability does not establish that the implementation fully matches the paper or resolve the sensitivity of the standard errors to numerical derivative step sizes.
+\end{document}
